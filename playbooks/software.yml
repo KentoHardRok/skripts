@@ -1,0 +1,16 @@
+---
+# Install software on servers
+
+- name: Install Software as required
+  hosts: all
+  become: yes
+
+  tasks:
+   - apt:
+      name: "{{ packages }}"
+      state: present
+     vars:
+      packages:
+       - nmap
+       - git
+       - tcpdump
