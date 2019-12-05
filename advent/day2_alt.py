@@ -16,32 +16,23 @@ address = list(map(int, address))
 
 address[1] = noun
 address[2] = verb
+addr = address.copy()
 
+def instruct_set():
+    if opcodes == 1:
+        addr[opcodes] = sum(param_list)
+    elif opcodes == 2:
+        addr[opcodes] = functools.reduce(operator.mul, param_list)
+    elif opcodes == 99:
+        pass
+    else:
+        exit(100)
+    print(addr[0])
 
-class Instructions:
-    def __init__(self, count, addr, oc_num, param_list):
-        self.param_list = param_list
-        self.oc_num = oc_num
-        self.addr = addr
-        self.count = count
-        self.instr_value = self.oc_num + len(self.param_list)
-        self.opcodes = self.addr[count]
-
-    def instruct_set(self):
-        if self.opcodes == 1:
-            self.addr[self.opcodes] = sum(self.param_list)
-        elif self.opcodes == 2:
-            self.addr[self.opcodes] = functools.reduce(operator.mul, self.param_list)
-        elif self.opcodes == 99:
-            pass
-        else:
-            exit(100)
-        print(self.addr[0])
-
-while i+instr_value in range(len(address)):
-    oc = address[i:oc_count]
-    params = address[i + oc_count:i + param_count]
-    Instructions(i, address, oc, params())
+while i+instr_value in range(len(addr)):
+    opcodes = int(map(int, addr[i:oc_count]))
+    params = map(int, addr[i + oc_count:i + param_count])
+    instruct_set()
     i += instr_value
 
 print(100 * noun + verb)
