@@ -1,5 +1,5 @@
 cable_path = "/wrk/skripts/advent/cable_path"
-
+cable_coord = [dict(),dict()]
 # puts file in list
 with open(cable_path) as f:
     cables = f.read().split("\n")
@@ -20,9 +20,9 @@ for j in range(i):
             y += int(cables[j][k][1:])
         elif cables[j][k][0] == "D":
             y -= int(cables[j][k][1:])
-        print("Coord[",k,"]",x,",",y)    
+        cable_coord[j][k] = (x,y)    
             
 
-print(len(cables[0]))
+print(cable_coord[1][199][0])
 print(i)
 print(x, y)
