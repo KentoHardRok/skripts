@@ -1,0 +1,75 @@
+#!/bin/bash
+
+set -euo pipefail
+
+EASYRSA3_PATH=/etc/openvpn/easy-rsa/easyrsa3
+KEY_DIR=/etc/openvpn/client/keys
+OUTPUT_DIR=/etc/openvpn/client
+BASE_CONFIG=/etc/openvpn/client/client.conf
+
+
+clear
+
+echo -n "Name of client config to be generated : "
+read -r NAME
+echo -n "How many ${NAME} certs do you need?: "
+read -r COUNT
+
+
+if ! ls "$OUTPUT_DIR"/"${NAME}"[0-9]* > /dev/null 2>&1; then
+  NUM=1
+else
+  FIRST=$(find "$OUTPUT_DIR" -type f -iregex ".*${NAME}[0-9].*" | sed 's/[^0-9]//g' | sort | head -n1)
+  LAST=$(find "$OUTPUT_DIR" -type f -iregex ".*${NAME}[0-9].*" | sed 's/[^0-9]//g' | sort | tail -n1)
+  read -r -p "Files ${NAME} ${FIRST} - ${LAST} already exist, would you like to create ${COUNT} additional files? [y|N]: " res
+  case "$res" in
+      y*|Y*)
+          NUM=$((LAST+1))
+          ;;
+      *)
+          exit
+          ;;
+  esac
+fi
+
+while [ "$COUNT" -gt 0 ]; do
+  # Add a number to the end of the name so we can keep count of how many have
+  # been created
+  USERFILE=$NAME$NUM
+
+  # Verify the .ovpn file doesn't exist
+
+  if [[ -e  ${OUTPUT_DIR}/${USERFILE}.ovpn ]]; then
+    echo "warn: Nothing to do (${USERFILE}.ovpn already exists)"
+    ((COUNT--))
+    continue
+  fi
+
+  expect -c "
+        set timeout 20
+        spawn ${EASYRSA3_PATH}/easyrsa build-client-full "$USERFILE" nopass
+        expect \"ca.key:\"
+        send \"July_2018!!\r\"
+  " > /dev/null
+# Now we append the keys to the base .ovpn file
+  sleep 1s
+  cp $EASYRSA3_PATH/pki/issued/$USERFILE.crt ${KEY_DIR}
+  cp $EASYRSA3_PATH/pki/private/$USERFILE.key ${KEY_DIR}
+
+  cat ${BASE_CONFIG} \
+      <(echo -e '<ca>') \
+      ${KEY_DIR}/ca.crt \
+      <(echo -e '</ca>\n<cert>') \
+      ${KEY_DIR}/$USERFILE.crt \
+      <(echo -e '</cert>\n<key>') \
+      ${KEY_DIR}/$USERFILE.key \
+      <(echo -e '</key>\n<tls-crypt>') \
+      ${KEY_DIR}/ta.key \
+      <(echo -e '</tls-crypt>') \
+      > ${OUTPUT_DIR}/$USERFILE.ovpn
+
+  echo "${USERFILE}.ovpn created"
+
+  ((NUM++))
+  ((COUNT--))
+done
