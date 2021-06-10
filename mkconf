@@ -2,19 +2,56 @@
 
 set -euo pipefail
 
-EASYRSA3_PATH=/etc/openvpn/easy-rsa/easyrsa3
-KEY_DIR=/etc/openvpn/client/keys
-OUTPUT_DIR=/etc/openvpn/client
-BASE_CONFIG=/etc/openvpn/client/client.conf
-
-
 clear
+if [ $# -ge 1 ]; then
+        WHO=${1}
+else
+        WHO=""
+fi
+        until [[ $WHO == "student" || $WHO == "cadre" ]]
+        do
+                echo -n "Do you need student or cadre openvpn certs?(student|cadre) [student]: "
+                read -r WHO
+                if [[ $WHO == "" ]]; then
+                        WHO="student"
+                        break
+                elif [[ $WHO == "student" || $WHO == "cadre" ]]; then
+                        break
+                else
+                        echo "NO I SAID student OR cadre ! DON'T TYPE SOME OTHER SHIT"
+                        sleep 2s
+                fi
+        done
+echo "Creating certificates in Group: $WHO"
 
-echo -n "Name of client config to be generated : "
-read -r NAME
-echo -n "How many ${NAME} certs do you need?: "
-read -r COUNT
 
+EASYRSA3_PATH=/etc/$WHO-openvpn/easy-rsa/easyrsa3
+KEY_DIR=/etc/$WHO-openvpn/client/keys
+OUTPUT_DIR=/etc/$WHO-openvpn/client
+BASE_CONFIG=/etc/$WHO-openvpn/client/client.conf
+
+
+
+if [ $# -ge 2 ]; then
+        NAME=${2}
+else
+        echo -n "Name of client config to be generated: "
+        read -r NAME
+fi
+echo "Creating certificates named: $NAME"
+
+COUNT=0
+
+until [[ ${COUNT} =~ ^-?[1-9]+$ ]]
+do
+        if [[ $# -ge 3 && ${COUNT} =~ [0] && ${3} =~ ^-?[1-9]+$ ]]; then
+                COUNT=${3}
+        else
+                echo -n "This needs to be a Number greater than or equal to 1! so How Many $NAME Certs?: "
+                read -r COUNT
+        fi
+done
+echo "Creating $COUNT certs for $NAME in $WHO group"
 
 if ! ls "$OUTPUT_DIR"/"${NAME}"[0-9]* > /dev/null 2>&1; then
   NUM=1
@@ -47,12 +84,12 @@ while [ "$COUNT" -gt 0 ]; do
 
   expect -c "
         set timeout 20
-        spawn ${EASYRSA3_PATH}/easyrsa build-client-full "$USERFILE" nopass
+        spawn ${EASYRSA3_PATH}/easyrsa  --pki-dir=${EASYRSA3_PATH}/pki build-client-full "$USERFILE" nopass
         expect \"ca.key:\"
-        send \"July_2018!!\r\"
+        send \"June_2021!!\r\"
   " > /dev/null
 # Now we append the keys to the base .ovpn file
-  sleep 1s
+  sleep 2s
   cp $EASYRSA3_PATH/pki/issued/$USERFILE.crt ${KEY_DIR}
   cp $EASYRSA3_PATH/pki/private/$USERFILE.key ${KEY_DIR}
 
