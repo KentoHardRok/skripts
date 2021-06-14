@@ -86,7 +86,7 @@ while [ "$COUNT" -gt 0 ]; do
         set timeout 20
         spawn ${EASYRSA3_PATH}/easyrsa  --pki-dir=${EASYRSA3_PATH}/pki build-client-full "$USERFILE" nopass
         expect \"ca.key:\"
-        send \"June_2021!!\r\"
+        send \"*******!\r\"
   " > /dev/null
 # Now we append the keys to the base .ovpn file
   sleep 2s
