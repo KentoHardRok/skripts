@@ -111,9 +111,8 @@ while [ "$COUNT" > 0 ]; do
       ${KEY_DIR}/ta.key \
       <(echo -e '</tls-crypt>') \
       > ${OUTPUT_DIR}/$USERFILE.ovpn
-
   echo "${USERFILE}.ovpn created"
-
   ((NUM++))
   ((COUNT--))
 done
+
