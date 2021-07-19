@@ -4,24 +4,28 @@ set -euo pipefail
 
 clear
 if [ $# -ge 1 ]; then
-        WHO=${1}
+  WHO=${1}
 else
-        WHO=""
+  WHO=""
 fi
-        until [[ $WHO == "student" || $WHO == "cadre" ]]
-        do
-                echo -n "Do you need student or cadre openvpn certs?(student|cadre) [student]: "
-                read -r WHO
-                if [[ $WHO == "" ]]; then
-                        WHO="student"
-                        break
-                elif [[ $WHO == "student" || $WHO == "cadre" ]]; then
-                        break
-                else
-                        echo "NO I SAID student OR cadre ! DON'T TYPE SOME OTHER SHIT"
-                        sleep 2s
-                fi
-        done
+  until [[ $WHO == "student" || $WHO == "cadre" ]]
+  do
+    echo -n "Do you need student or cadre openvpn certs?(student|cadre) [student]: "
+    read -r WHO
+    if [[ $WHO == "" ]]; then
+      WHO="student"
+      break
+    elif [[ $WHO =~ "student"+[s]? ]]; then
+      $WHO="student"
+      break
+    elif [[ $WHO =~ "cadre"+[s]? ]]; then
+      $WHO="cadre"
+      break
+    else
+      echo "NO I SAID student OR cadre ! DON'T TYPE SOME OTHER SHIT"
+      sleep 2s
+    fi
+  done
 echo "Creating certificates in Group: $WHO"
 
 
@@ -33,25 +37,28 @@ BASE_CONFIG=/etc/$WHO-openvpn/client/client.conf
 
 
 if [ $# -ge 2 ]; then
-        NAME=${2}
+  NAME=${2}
 else
-        echo -n "Name of client config to be generated: "
-        read -r NAME
+  echo -n "Name of client config to be generated: "
+  read -r NAME
 fi
 echo "Creating certificates named: $NAME"
 
-COUNT=0
 
-until [[ ${COUNT} =~ ^-?[1-9]+$ ]]
-do
-        if [[ $# -ge 3 && ${COUNT} =~ [0] && ${3} =~ ^-?[1-9]+$ ]]; then
-                COUNT=${3}
-        else
-                echo -n "This needs to be a Number greater than or equal to 1! so How Many $NAME Certs?: "
-                read -r COUNT
-        fi
+if [ $# -ge 3 ]; then
+  CERT_COUNT=${3}
+else
+  echo -n "How Many $NAME certs do  you want to create?: "
+  read -r CERT_COUNT
+
+valid_count=`expr $CERT_COUNT / 1 > /dev/null; echo $?`
+
+until [[valid_count != 0]]; do
+  echo -n "Your cert count is invalid, please give me a valid integer?: "
+  read -r CERT_COUNT
 done
-echo "Creating $COUNT certs for $NAME in $WHO group"
+
+echo"Creating $COUNT certs for $NAME in $WHO group"
 
 if ! ls "$OUTPUT_DIR"/"${NAME}"[0-9]* > /dev/null 2>&1; then
   NUM=1
@@ -69,7 +76,7 @@ else
   esac
 fi
 
-while [ "$COUNT" -gt 0 ]; do
+while [ "$COUNT" > 0 ]; do
   # Add a number to the end of the name so we can keep count of how many have
   # been created
   USERFILE=$NAME$NUM
