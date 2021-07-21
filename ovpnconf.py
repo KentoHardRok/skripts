@@ -47,28 +47,34 @@ def write_certs(info):
     the loop to start creeating how ever many certs they requested
     added abs just incase they entered a negative int
     """
-    for n in range(1, abs(info['count'])):
+    for n in range(abs(info['count'])):
         # name the client_cert
         client_name = info['name'] + "{:03}".format(n)
         # create the cert
         subprocess.run([
-            cfg.file_loc["easyrsa"] + "easyrsa", "build-client-full", client_name, "nopass"
-            ])
+            cfg.file_loc["easyrsa"] + "easyrsa",
+            "build-client-full",
+            client_name,
+            "nopass"
+            ], check=True)
         # create the name of the new cert from info
         client_cert = client_name + ".ovpn"
         # copy base config to new cert
-        shutil.copyfile(cfg.file_loc["easyrsa"] + 'client.conf', cfg.file_loc["client_conf"] + client_cert)
+        shutil.copyfile(
+            cfg.file_loc["client_conf"] + 'client.conf',
+            cfg.file_loc["client_conf"] + client_cert
+            )
         # open new file for appending certs too
-        with open(client_cert, "a") as newconf:
+        with open(cfg.file_loc["client_conf"] + client_cert, "a") as newconf:
             newconf.write("<ca>\n")
             with open(cfg.file_loc["key_dir"] + "ca.crt", "r") as ca:
                 newconf.write(ca.read())
             newconf.write("<\\ca>\n<cert>\n")
-            with open(cfg.file_loc["pub"] + client_name + ".crt", "r") as ucert:
-                newconf.write(ucert.read())
+            with open(cfg.file_loc["pub"] + client_name + ".crt", "r") as cert:
+                newconf.write(cert.read())
             newconf.write("<\\cert>\n<key>\n")
-            with open(cfg.file_loc["priv"] + client_name + ".key", "r") as ukey:
-                newconf.write(ukey.read())
+            with open(cfg.file_loc["priv"] + client_name + ".key", "r") as key:
+                newconf.write(key.read())
             newconf.write("<\\key>\n<tls-crypt>\n")
             with open(cfg.file_loc["key_dir"] + "ta.key", "r") as ta:
                 newconf.write(ta.read())
