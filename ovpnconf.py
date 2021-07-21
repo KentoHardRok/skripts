@@ -47,7 +47,7 @@ def write_certs(info):
     the loop to start creeating how ever many certs they requested
     added abs just incase they entered a negative int
     """
-    for n in range(abs(info['count'])):
+    for n in range(abs(info['count']) + 1):
         # name the client_cert
         client_name = info['name'] + "{:03}".format(n)
         # create the cert
