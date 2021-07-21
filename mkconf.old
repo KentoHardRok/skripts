@@ -2,12 +2,61 @@
 
 set -euo pipefail
 
+clear
+if [ $# -ge 1 ]; then
+  WHO=${1}
+else
+  WHO=""
+fi
+  until [[ $WHO == "student" || $WHO == "cadre" ]]
+  do
+    echo -n "Do you need student or cadre openvpn certs?(student|cadre) [student]: "
+    read -r WHO
+    if [[ $WHO == "" ]]; then
+      WHO="student"
+      break
+    elif [[ $WHO =~ "student"+[s]? ]]; then
+      $WHO="student"
+      break
+    elif [[ $WHO =~ "cadre"+[s]? ]]; then
+      $WHO="cadre"
+      break
+    else
+      echo "NO I SAID student OR cadre ! DON'T TYPE SOME OTHER SHIT"
+      sleep 2s
+    fi
+  done
+echo "Creating certificates in Group: $WHO"
+
 
 EASYRSA3_PATH=/etc/$WHO-openvpn/easy-rsa/easyrsa3
 KEY_DIR=/etc/$WHO-openvpn/client/keys
 OUTPUT_DIR=/etc/$WHO-openvpn/client
 BASE_CONFIG=/etc/$WHO-openvpn/client/client.conf
 
+
+
+if [ $# -ge 2 ]; then
+  NAME=${2}
+else
+  echo -n "Name of client config to be generated: "
+  read -r NAME
+fi
+echo "Creating certificates named: $NAME"
+
+
+if [ $# -ge 3 ]; then
+  COUNT=${3}
+else
+  echo -n "How Many $NAME certs do  you want to create?: "
+  read -r COUNT
+
+valid_count=`expr $CERT_COUNT / 1 > /dev/null; echo $?`
+
+until [[valid_count != 0]]; do
+  echo -n "Your cert count is invalid, please give me a valid integer?: "
+  read -r COUNT
+done
 
 echo"Creating $COUNT certs for $NAME in $WHO group"
 
