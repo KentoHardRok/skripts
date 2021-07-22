@@ -4,10 +4,15 @@
 config file for ovpnconf
 """
 
-file_loc = {
-            "priv": "/etc/easy-rsa/easyrsa3/pki/private/",
-            "pub": "/etc/easy-rsa/easyrsa3/pki/issued/",
-            "key_dir": "/etc/easy-rsa/easyrsa3/pki/",
-            "client_conf": "/etc/easy-rsa/easyrsa3/clients/",
-            "easyrsa": "/etc/easy-rsa/easyrsa3/"
-            }
+CERT = {
+    "student": "/etc/students-openvpn/",
+    "cadre": "/etc/cadre-openvpn/"
+    }
+
+FILE = {
+    "priv": "easy-rsa/easyrsa3/pki/private/",
+    "pub": "easy-rsa/easyrsa3/pki/issued/",
+    "key_dir": "easy-rsa/easyrsa3/pki/",
+    "client_conf": "easy-rsa/easyrsa3/clients/",
+    "easyrsa": "easy-rsa/easyrsa3/"
+    }
