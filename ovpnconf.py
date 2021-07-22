@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 
 """
 Creates OVPN certs for these guys
@@ -7,7 +7,7 @@ Creates OVPN certs for these guys
 # import subprocess
 import argparse
 import re
-import subprocess
+import pexpect
 import ovpnfiles as cfg
 
 
@@ -63,12 +63,11 @@ def write_certs(info, c_type):
             user_cert_loc = c_type + cfg.FILE["pub"] + client_name + ".crt"
             user_key_loc = c_type + cfg.FILE["priv"] + client_name + ".key"
             # create the cert
-            subprocess.run([
-                c_type + cfg.FILE["easyrsa"] + "easyrsa",
-                "--pki-dir=" + c_type + cfg.FILE["key_dir"],
-                "build-client-full", client_name, "nopass"],
-                           stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
-                           check=True)
+            pexpect.run(
+                c_type + cfg.FILE["easyrsa"] + "easyrsa" +
+                " --pki-dir=" + c_type + cfg.FILE["key_dir"] +
+                " build-client-full " + client_name + " nopass",
+                events={'(?i)ca.key:': 'password\n'})
             # create the name of the new cert from info
             client_cert = client_name + ".ovpn"
             # open new file for appending certs too
@@ -90,8 +89,9 @@ def write_certs(info, c_type):
                 with open(ta_key_loc, "r") as ta_key:
                     newconf.write(ta_key.read())
                 newconf.write("<\\tls-crypt>\n")
-    except Exception:
+    except Exception as error:
         print("There was a problem during the cert creation process!")
+        print(error)
     else:
         print(
             "Succesfully Created your " + str(abs(info['count'])) + " " +
